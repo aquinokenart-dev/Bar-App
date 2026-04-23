@@ -9,19 +9,25 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-  Map<String, int> drinks = {
-    "Mojito": 5,
-    "Margarita": 3,
-    "Whiskey": 4,
-    "Beer": 6,
+
+  Map<String, Map<String, int>> drinks = {
+    "Strong": {
+      "Whiskey": 13,
+      "Beer": 9,
+    },
+    "Mild": {
+      "Mojito": 20,
+      "Margarita": 30,
+    },
   };
 
   List<String> cart = [];
 
-  void orderDrink(String drink) {
-    if (drinks[drink]! > 0) {
+  void orderDrink(String category, String drink) {
+    if (drinks[category]![drink]! > 0) {
       setState(() {
-        drinks[drink] = drinks[drink]! - 1;
+        drinks[category]![drink] =
+            drinks[category]![drink]! - 1;
         cart.add(drink);
       });
     } else {
@@ -31,34 +37,61 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
+  void openCart() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CartScreen(cart: cart),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Bar Menu"),
+        title: const Text("Bar Menu 🍹"),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CartScreen(cart: cart),
-                ),
-              );
-            },
-          )
+            onPressed: openCart,
+          ),
         ],
       ),
+
       body: ListView(
-        children: drinks.keys.map((drink) {
-          return ListTile(
-            title: Text(drink),
-            subtitle: Text("Available: ${drinks[drink]}"),
-            trailing: ElevatedButton(
-              onPressed: () => orderDrink(drink),
-              child: const Text("Add"),
-            ),
+        children: drinks.keys.map((category) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: Text(
+                  category,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
+              ...drinks[category]!.keys.map((drink) {
+                return ListTile(
+                  title: Text(drink),
+                  subtitle: Text(
+                    "Available: ${drinks[category]![drink]}",
+                  ),
+                  trailing: ElevatedButton(
+                    onPressed: () => orderDrink(category, drink),
+                    child: const Text("Add"),
+                  ),
+                );
+              }).toList(),
+
+              const Divider(),
+            ],
           );
         }).toList(),
       ),
